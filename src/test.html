@@ -1,0 +1,184 @@
+<!doctype html>
+<html>
+<head>
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.js"></script>
+</head>
+<body>
+    <form action="/search" id="f" method="get">
+        <div id="hf"></div>
+        <div class="Test best" id="fkbx">
+            <div id="fkbx-text">Input one</div>
+            <input id="q" aria-hidden="true" autocomplete="off" name="q" tabindex="-1" type="url" jsaction="mousedown:ntp.fkbxclk">
+            <input id="q" aria-hidden="true" autocomplete="off" name="q" tabindex="-1" type="url" jsaction="mousedown:ntp.fkbxclk">
+            <input id="q" aria-hidden="true" autocomplete="off" name="q" tabindex="-1" type="url" jsaction="mousedown:ntp.fkbxclk">
+            <input id="q" aria-hidden="true" autocomplete="off" name="q" tabindex="-1" type="url" jsaction="mousedown:ntp.fkbxclk">
+            <div id="fkbx-text">Input two</div>
+            <input id="q" aria-hidden="true" autocomplete="off" name="q" tabindex="-1" type="url" jsaction="mousedown:ntp.fkbxclk">
+        </div>
+        <div class="Test best" id="fkbx">
+            <div id="fkbx-text">Input three</div>
+            <input id="q" aria-hidden="true" autocomplete="off" name="q" tabindex="-1" type="url" jsaction="mousedown:ntp.fkbxclk">
+            <div id="fkbx-text">Input four</div>
+            <input id="q" aria-hidden="true" autocomplete="off" name="q" tabindex="-1" type="url" jsaction="mousedown:ntp.fkbxclk">
+        </div>
+    </form>
+    <script>
+        $(document).ready(function () {
+            //$('.Test.best input#q').click(function (e) {
+            //    alert("test");
+            //});
+        })
+
+        function UNIQUE(obj) {
+            return $(obj).length == 1;
+        }
+
+        jQuery.fn.extend({
+            getPath: function () {
+                if (this.length != 1) throw 'Requires one element.';
+                var path, node = this, isParent = false;
+
+                do {
+                    var realNode = node[0];
+                    var name = (
+
+                        // IE9 and non-IE
+                        realNode.localName ||
+
+                        // IE <= 8
+                        realNode.tagName ||
+                        realNode.nodeName
+
+                    );
+
+                    switch (realNode.tagName) {
+                        case 'INPUT':
+                            if ($(realNode).attr('name'))
+                                name = 'input[name=' + $(realNode).attr('name') + ']';
+                            else if ($(realNode).attr('type'))
+                                name = 'input[type=' + $(realNode).attr('type') + ']';
+                            break;
+                        default:
+                    }
+
+                    if (isParent) {
+                        if (UNIQUE(name + (path ? '>' + path : '')))
+                            return name + (path ? '>' + path : '');
+                    } else if (UNIQUE(name))
+                        return name;
+
+                    // on IE8, nodeName is '#document' at the top level, but we don't need that
+                    if (!name || name == '#document') break;
+
+                    name = name.toLowerCase();
+
+                    if (realNode.id) {
+                        name += '#' + realNode.id;
+
+                        if (isParent) {
+                            if (UNIQUE(name + (path ? '>' + path : '')))
+                                return name + (path ? '>' + path : '');
+                        } else if (UNIQUE(name))
+                            return name;
+                    }
+
+                    if (realNode.className) {
+                        name += '.' + realNode.className.split(/\s+/).join('.');
+
+                        if (isParent) {
+                            if (UNIQUE(name + (path ? '>' + path : '')))
+                                return name + (path ? '>' + path : '');
+                        } else if (UNIQUE(name))
+                            return name;
+                    }
+
+                    var parent = node.parent(),
+                        siblings = parent.children(name);
+                    var tempName = name;
+
+                    if (siblings.length > 1)
+                        if (isParent) {
+                            tempName += ':eq(' + siblings.index(node) + ')' + (path ? '>' + path : '');
+                        }
+                        else {
+                            tempName += ':eq(' + siblings.index(node) + ')';
+                        }
+
+                    if ($(name).length == siblings.length) {
+                        return tempName;
+                    }
+                    path = tempName + (path ? ' > ' + path : '');
+
+                    node = parent;
+                    isParent = true;
+                } while (node.length);
+
+                return path;
+
+            }
+        });
+
+        /**
+        *Get unique css path
+        **/
+        jQuery.fn.getCSSPath = function () {
+            var path, node = this, isParent = false;
+            while (node.length) {
+                var realNode = node[0], name = (
+
+                    // IE9 and non-IE
+                    realNode.localName ||
+
+                    // IE <= 8
+                    realNode.tagName ||
+                    realNode.nodeName
+
+                );
+                switch (realNode.tagName) {
+                    case 'INPUT':
+                        if ($(realNode).attr('name'))
+                            name = 'input[name=' + $(realNode).attr('name') + ']';
+                        else if ($(realNode).attr('type'))
+                            name = 'input[type=' + $(realNode).attr('type') + ']';
+                        break;
+                    default:
+                }
+                if (!name) break;
+
+                if (isParent) {
+                    if (UNIQUE(name + (path ? '>' + path : '')))
+                        return name + (path ? '>' + path : '');
+                } else if (UNIQUE(name))
+                    return name;
+
+                // on IE8, nodeName is '#document' at the top level, but we don't need that
+                if (!name || name == '#document') break;
+
+                name = name.toLowerCase();
+
+                name = name.toLowerCase();
+
+                var parent = node.parent();
+
+                var sameTagSiblings = parent.children(name);
+                if (sameTagSiblings.length > 1) {
+                    allSiblings = parent.children();
+                    var index = allSiblings.index(realNode) + 1;
+                    if (index > 1) {
+                        name += ':nth-child(' + index + ')';
+                    }
+                }
+
+                path = name + (path ? '>' + path : '');
+                if (UNIQUE(path))
+                    return path;
+                node = parent;
+            }
+
+            return path;
+        };
+
+    </script>
+</body>
+</html>
